@@ -4,7 +4,7 @@ import 'package:task_app/enums/task_action_enum.dart';
 import 'package:task_app/utils/constants.dart';
 import 'package:task_app/view_models/task_view_model.dart';
 import 'package:task_app/views/styles.dart';
-import 'package:task_app/views/widgets/dialogs_widget.dart';
+import 'package:task_app/views/widgets/modal_widget.dart';
 import 'package:task_app/views/widgets/task_list_widget.dart';
 
 class TodoTaskWidget extends StatelessWidget {
