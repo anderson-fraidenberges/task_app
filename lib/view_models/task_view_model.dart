@@ -7,44 +7,49 @@ class TaskViewModel extends ChangeNotifier {
   final Box<Task> _taskBox = Hive.box<Task>('tasks');
   List<Task> _tasks = [];  
   TaskActionEnum _taskActionEnum = TaskActionEnum.nothing; 
+  int pageSize = 10;    
+  int length = 0;
+
+  void incrementPageSize() {
+     pageSize += 10;
+     loadTasks(); 
+  }
 
   void setTaskActionEnum(TaskActionEnum taskActionEnum) {
     _taskActionEnum = taskActionEnum;
-    loadTasks();
+    loadTasks();  
   } 
   
-  void loadTasks() {
+  void loadTasks() { 
+     if (_taskActionEnum == TaskActionEnum.todo || _taskActionEnum == TaskActionEnum.nothing) {
+       _getFromLocalDb();             
+     }  else if (_taskActionEnum == TaskActionEnum.done) {
+       loadCompletedTasks();
+     }
 
-    if (_taskActionEnum == TaskActionEnum.todo || _taskActionEnum == TaskActionEnum.nothing) {
-      _getFromLocalDb();
-    }  else if (_taskActionEnum == TaskActionEnum.done) {
-      loadCompletedTasks();
-    }
     notifyListeners();
-
   }
 
   get tasks => _tasks;
 
-  void loadCompletedTasks() { 
-    _getFromLocalDb();   
-    _tasks = _tasks.where((w) => w.completed).toList();
+  void loadCompletedTasks() {     
+    _tasks = _taskBox.values.where((w) => w.completed).take(pageSize).toList();
     notifyListeners();
   }
 
-  void searchTask(String searchText) {
-    _getFromLocalDb();
-    _tasks = _tasks.where((w)=> w.title.contains(searchText) || w.description.contains(searchText)).toList();
+  void searchTask(String searchText) {    
+    _tasks =  _taskBox.values.where((w)=> w.title.contains(searchText) || w.description.contains(searchText)).take(pageSize).toList();
     notifyListeners();
   }
 
   TaskViewModel(){   
-    _getFromLocalDb();
+    _getFromLocalDb();     
     notifyListeners();
   }
 
-  void _getFromLocalDb() {
-    _tasks = _taskBox.values.toList();    
+  void _getFromLocalDb() {   
+    length = _taskBox.values.toList().length;
+    _tasks = _taskBox.values.take(pageSize).toList();    
   }
 
   Future<void> addTask(String title, String description) async {
@@ -68,6 +73,7 @@ class TaskViewModel extends ChangeNotifier {
 
   Future<void> removeTask(Task task) async {
     await _taskBox.delete(task.id);
+    length = _taskBox.values.toList().length;
     _tasks.remove(task);
     notifyListeners();
   }
@@ -75,6 +81,7 @@ class TaskViewModel extends ChangeNotifier {
   Future<void> removeAllTask() async {
     await _taskBox.clear();
     _tasks.clear();
+    length = 0;
     notifyListeners();
   }
 

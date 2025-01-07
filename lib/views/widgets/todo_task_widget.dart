@@ -19,7 +19,7 @@ class TodoTaskWidget extends StatelessWidget {
     String subWelcomeMessage() {
       if (taskViewModel.tasks.isNotEmpty) {
 
-        return "You're got ${taskViewModel.tasks.length} tasks to do";
+        return "You're got ${taskViewModel.length} tasks to do";
       }
 
       return "Create tasks to achieve more.";
