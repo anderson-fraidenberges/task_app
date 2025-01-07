@@ -44,8 +44,11 @@ dependencies:
 dev_dependencies:
   build_runner: any
   hive_generator: any
+ 
   flutter_test:
     sdk: flutter
+  mockito: any
+  hive_test: any
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
