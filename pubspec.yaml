@@ -30,7 +30,8 @@ environment:
 dependencies:
   hive: any
   hive_flutter: any
-  provider: any  
+  provider: any
+  uuid: any
 
   flutter:
     sdk: flutter

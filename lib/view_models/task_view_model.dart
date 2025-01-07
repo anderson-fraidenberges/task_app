@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:task_app/enums/task_action_enum.dart';
 import 'package:task_app/models/task.dart';
+import 'package:uuid/uuid.dart';
 
 class TaskViewModel extends ChangeNotifier {
   final Box<Task> _taskBox = Hive.box<Task>('tasks');
@@ -49,17 +50,18 @@ class TaskViewModel extends ChangeNotifier {
 
   void _getFromLocalDb() {   
     length = _taskBox.values.toList().length;
+    _tasks.clear();
     _tasks = _taskBox.values.take(pageSize).toList();    
   }
 
   Future<void> addTask(String title, String description) async {
-    final int id = generateNewId;
+    final String guid = generateNewGuid();
     final Task task =
-        Task(id: id, title: title, description: description, completed: false);
+        Task(id: guid, title: title, description: description, completed: false);
     
-    await _taskBox.put(id, task);
-    _getFromLocalDb();
-    _tasks.insert(0, task);        
+    await _taskBox.put(guid, task);
+    await _taskBox.flush();
+    _getFromLocalDb();            
     notifyListeners();
   }  
 
@@ -67,7 +69,8 @@ class TaskViewModel extends ChangeNotifier {
     int idx = _tasks.indexWhere((i) => i.id == task.id);
 
     _tasks[idx].completed = !_tasks[idx].completed;
-    await _taskBox.put(_tasks[idx].id, _tasks[idx]);    
+    await _taskBox.put(_tasks[idx].id, _tasks[idx]);  
+    await _taskBox.flush();  
     notifyListeners();
   }
 
@@ -79,11 +82,17 @@ class TaskViewModel extends ChangeNotifier {
   }
 
   Future<void> removeAllTask() async {
-    await _taskBox.clear();
-    _tasks.clear();
-    length = 0;
+    
+    for (var task in _taskBox.values.where((w)=> w.completed).toList()) {
+        await _taskBox.delete(task.id);              
+    }    
+    await _taskBox.flush();
+     _getFromLocalDb();
     notifyListeners();
   }
 
-  int get generateNewId => _tasks.length + 1;
+  String generateNewGuid() { 
+    var uuid = const Uuid();
+    return uuid.v4();   
+  }
 }
